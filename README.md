@@ -12,3 +12,5 @@ Stock Trading Android App and Website
 !  Applied a combination of HTML5, Bootstrap, Angular, AJAX + XML on client side and showed price graph with Highcharts. Stored all hot stocks information on cache and reduced 95% searching time.
 
 !  Utilized Android lifecycle, Java, Json, Picasso, Glide and Volley to build this Stock trading Android application.
+
+Presentaion Vedio: https://youtu.be/EgHvO7AuHvY
