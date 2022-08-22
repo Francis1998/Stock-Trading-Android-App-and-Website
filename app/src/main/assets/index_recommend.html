@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<style>
+    #container {
+        height: 400px;
+        min-width: 310px;
+    }
+</style>
+<script>
+    function convertData(CompanyRecomTrends) {
+        var lineData = [];
+        let len = CompanyRecomTrends.length
+        let strongBuy = []
+        let buy = []
+        let hold  = []
+        let sell = []
+        let strongSell= []
+        let period = []
+        for (let i = 0; i < len; i++){
+            strongBuy.push(CompanyRecomTrends[i].strongBuy)
+            buy.push(CompanyRecomTrends[i].buy)
+            hold.push(CompanyRecomTrends[i].hold)
+            sell.push(CompanyRecomTrends[i].sell)
+            strongSell.push(CompanyRecomTrends[i].strongSell)
+<!--            period.push(CompanyRecomTrends[i].period.substring(0, CompanyRecomTrends[i].period.length - 3))-->
+            period.push(CompanyRecomTrends[i].period)
+
+        }
+        return {
+            strongBuy: strongBuy,
+            buy: buy,
+            hold: hold,
+            sell: sell,
+            strongSell: strongSell,
+            period: period,
+        }
+    }
+    function init(query) {
+            Highcharts.getJSON('https://frontend-346800.wn.r.appspot.com/companyRecomTrends/' + query, function (data) {
+                // Create the chart
+
+                data = convertData(data);
+<!--                console.log(data)-->
+                Highcharts.chart('container', {
+                    chart: {
+                        type: 'column',
+                    },
+                    title: {
+                        text: 'Recommendation Trends'
+                    },
+                    xAxis: {
+                        categories: data.period
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: '#Analysis',
+                            offset: 40,
+<!--                            align: 'center',-->
+                        },
+                        stackLabels: {
+                            enabled: true,
+                            style: {
+                                fontWeight: 'bold',
+                                color: ( // theme
+                                    // @ts-ignore
+                                    Highcharts.defaultOptions.title.style &&
+                                    // @ts-ignore
+                                    Highcharts.defaultOptions.title.style.color
+                                ) || 'gray'
+                            }
+                        }
+                    },
+                    legend: {
+                        floating: false,
+                        backgroundColor:
+                        // @ts-ignore
+                        Highcharts.defaultOptions.legend.backgroundColor,
+                        borderColor: '#CCC',
+                        borderWidth: 1,
+                        shadow: false,
+                        align: 'center',
+                        verticalAlign: 'bottom',
+                        x: 0,
+                        y: 0,
+                    },
+<!--                    tooltip: {-->
+<!--                        headerFormat: '{point.x}<br/>',-->
+<!--                        pointFormat: '<p style="color:{series.color}"> <b>•</b></p> <p style="font-size:15px">{series.name}: <b>{point.y}</b></p>' //<br/>Total: {point.stackTotal}-->
+<!--                    },-->
+                          tooltip: {
+                            headerFormat: '<b>{point.x}</b><br/>',
+                            pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+                          },
+                    plotOptions: {
+                        column: {
+                            stacking: 'normal',
+                            dataLabels: {
+                                enabled: false
+                            }
+                        }
+                    },
+                    series: [{
+                        name: 'Strong Buy', //'Strong Buy', 'Buy', 'Hold', 'Sell', 'Strong Sell'
+                        // @ts-ignore
+                        data: data.strongBuy, //one value based on index
+                        color: '#0b542d'
+                    }, {
+                        name: 'Buy',
+                        // @ts-ignore
+                        data: data.buy,
+                        color: '#36c277'
+                    }, {
+                        name: 'Hold',
+                        // @ts-ignore
+                        data: data.hold,
+                        color: '#805f17'
+                    }, {
+                        name: 'Sell',
+                        // @ts-ignore
+                        data: data.sell,
+                        color: '#e72862'
+                    },{
+                        name: 'Strong Sell',
+                        // @ts-ignore
+                        data: data.strongSell,
+                        color: '#6b0606'
+                    }]
+                });
+            });
+    };
+
+    function judgeOpen(time){
+        let currentTime = Math.floor(Date.now()/1000);;
+        return currentTime - time <= 5 * 60;
+    }
+</script>
+
+<body>
+<div id="container"></div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/drag-panes.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/indicators/indicators.js"></script>
+    <script src="https://code.highcharts.com/stock/indicators/volume-by-price.js"></script>
+</head>
+<style>
+    #container {
+        height: 400px;
+        min-width: 310px;
+    }
+</style>
+<script>
+ function convertData(historicalData) {
+     var lineData = [];
+     for (let i = 0; i < historicalData.t.length; i++) {
+         lineData.push([
+             1000 * (historicalData.t[i] -  7 * 60 * 60),
+             Math.round(historicalData.c[i] * 100) / 100
+         ]);
+     }
+     return lineData;
+ }
+ function init(name) {
+         var currentDate, twoYearBeforeDate;
+         currentDate = Math.round(Date.now() / 1000).toString()
+         twoYearBeforeDate = Math.round(Date.now() / 1000 - 2 * 365 * 24 * 60 *60).toString()
+         Highcharts.getJSON('https://frontend-346800.wn.r.appspot.com/companyHisData/' + name + '/D/' + twoYearBeforeDate + "/" + currentDate, function (data) {
+             let volume = []
+             let ohlc = []
+             for (let i = 0; i < data.t.length; i += 1) {
+                 ohlc.push([
+                     data.t[i]*1000, // the date
+                     Math.round(data.o[i] * 100) / 100, // open
+                     Math.round(data.h[i] * 100) / 100,
+                     Math.round(data.l[i] * 100) / 100,
+                     Math.round(data.c[i] * 100) / 100,
+                     // data.h[i], // high
+                     // data.l[i], // low
+                     // data.c[i] // close
+                 ]);
+
+                 volume.push([
+                     data.t[i]*1000, // the date
+                     Math.round(data.v[i] * 100) / 100,
+                     // data.v[i] // the volume
+                 ]);
+             }
+             // Create the chart
+             Highcharts.stockChart('container', {
+
+                 rangeSelector: {
+                     selected: 2
+                 },
+
+                 title: {
+                     text: name + ' Historical'
+                 },
+
+                 subtitle: {
+                     text: 'With SMA and Volume by Price technical indicators'
+                 },
+
+                 yAxis: [{
+                     startOnTick: false,
+                     endOnTick: false,
+                     labels: {
+                         align: 'right',
+                         x: -3
+                     },
+                     title: {
+                         text: 'OHLC'
+                     },
+                     height: '60%',
+                     lineWidth: 2,
+                     resize: {
+                         enabled: true
+                     }
+                 }, {
+                     labels: {
+                         align: 'right',
+                         x: -3
+                     },
+                     title: {
+                         text: 'Volume'
+                     },
+                     top: '65%',
+                     height: '35%',
+                     offset: 0,
+                     lineWidth: 2
+                 }],
+
+                 tooltip: {
+                     split: true
+                 },
+
+                 series: [{
+                     type: 'candlestick',
+                     name: name,
+                     id: name,
+                     zIndex: 2,
+                     data: ohlc
+                 }, {
+                     type: 'column',
+                     name: 'Volume',
+                     id: 'volume',
+                     data: volume,
+                     yAxis: 1
+                 }, {
+                     type: 'vbp',
+                     linkedTo: name,
+                     params: {
+                         volumeSeriesID: 'volume'
+                     },
+                     dataLabels: {
+                         enabled: false
+                     },
+                     zoneLines: {
+                         enabled: false
+                     }
+                 }, {
+                     type: 'sma',
+                     linkedTo: name,
+                     zIndex: 1,
+                     marker: {
+                         enabled: false
+                     }
+                 }]
+             });
+         });
+ };
+
+ function judgeOpen(time){
+     let currentTime = Math.floor(Date.now()/1000);;
+     return currentTime - time <= 5 * 60;
+ }
+
+</script>
+
+<body>
+<div id="container"></div>
+</body>
+</html>

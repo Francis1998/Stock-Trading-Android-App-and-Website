@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<style>
+    #container {
+        height: 400px;
+        min-width: 310px;
+    }
+</style>
+<script>
+    function convertData(CompanyEarnings) {
+        let len = CompanyEarnings.length
+        let actual = []
+        let estimate = []
+        let surprise = []
+        let period = []
+        for (let i = 0; i < len; i++) {
+            actual.push(CompanyEarnings[i].actual)
+            estimate.push(CompanyEarnings[i].estimate)
+            surprise.push(CompanyEarnings[i].surprise)
+            period.push(CompanyEarnings[i].period + '</br>Surprise: ' + (Math.round(CompanyEarnings[i].surprise * 100) / 100).toFixed(2).toString())
+        }
+        return {
+            actual: actual,
+            estimate: estimate,
+            surprise: surprise,
+            period: period,
+        }
+    }
+    function init(query) {
+        Highcharts.getJSON('https://frontend-346800.wn.r.appspot.com/companyEarnings/' + query, function (data) {
+            // Create the chart
+
+            data = convertData(data);
+<!--            console.log(data)-->
+            Highcharts.chart('container',{
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: 'Historical EPS Surprises'
+                },
+                xAxis: {
+                    categories: data.period//time
+                },
+                yAxis: {
+                    title: {
+                        text: 'Quarterly EPS'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value.toString();
+                        }
+                    }
+                },
+                tooltip: {
+                    split: false,
+                    shared: true,
+                    headerFormat: '{point.x}<br/>',
+                    pointFormat: '<div style="color:{series.color}"> <b>•</b></div> <p>{series.name}: <b>{point.y}</b></p><br/>',
+                    //<br/>Total: {point.stackTotal}
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Actual',
+                    // @ts-ignore
+                    marker: {
+                        symbol: 'circle'
+                    },
+                    // @ts-ignore
+                    data: data.actual
+
+                }, {
+                    name: 'Estimate',
+                    // @ts-ignore
+                    marker: {
+                        symbol: 'diamond'
+                    },
+                    // @ts-ignore
+                    data: data.estimate
+                },
+                ]
+            }, function(chart) {
+                const series = chart.series;
+                series.forEach(series => {
+                    const lastPoint = series.data.length -1
+                    const x = series.points[lastPoint].plotX + chart.plotLeft - 10;
+                    const y = series.points[lastPoint].plotY + chart.plotTop + 20;
+                    const name = series.name;
+                    const color = series.color;
+                    renderLabel(chart, name, x, y, color);
+                })
+            });
+        });
+    };
+    function renderLabel(chart, name, x, y, color) {
+        chart.renderer.text(name, x, y)
+            .css({
+                color: color
+            })
+            .add()
+            .toFront();
+    }
+    function judgeOpen(time){
+        let currentTime = Math.floor(Date.now()/1000);;
+        return currentTime - time <= 5 * 60;
+    }
+</script>
+
+<body>
+<div id="container"></div>
+</body>
+</html>
