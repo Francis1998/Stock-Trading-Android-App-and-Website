@@ -1,9 +1,7 @@
 # Stock-Trading-Android-App-and-Website
 Stock Trading Android App and Website
 
-!  Constructed a Scrapy distributed crawler system to collect Stock data and improved crawler efficiency by 300%. 
-
-!  This system ran on 5 nodes with 10,000 records updated daily and 6,000,000 records stored in MongoDB database. 
+!  Constructed a Scrapy distributed crawler system to collect Stock data and improved crawler efficiency by 50%. 
 
 !  Utilized Redis for distributed crawling to store request information and centralize management of crawler.
 
